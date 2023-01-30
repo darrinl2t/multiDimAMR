@@ -36,6 +36,7 @@ License
 #include "faceSet.H"
 #include "cellSet.H"
 #include "pointSet.H"
+#include "labelPairHashes.H"
 #include "OFstream.H"
 #include "Time.H"
 #include "FaceCellWave.H"
@@ -846,7 +847,7 @@ void Foam::hexRef::checkInternalOrientation
     face compactFace(identity(newFace.size()));
     pointField compactPoints(meshMod.points(), newFace);
 
-    vector n(compactFace.normal(compactPoints));
+    vector n(compactFace.unitNormal(compactPoints));
 
     vector dir(neiPt - ownPt);
 
@@ -892,7 +893,7 @@ void Foam::hexRef::checkBoundaryOrientation
     face compactFace(identity(newFace.size()));
     pointField compactPoints(meshMod.points(), newFace);
 
-    vector n(compactFace.normal(compactPoints));
+    vector n(compactFace.unitNormal(compactPoints));
 
     vector dir(boundaryPt - ownPt);
 
@@ -3107,10 +3108,9 @@ void Foam::hexRef::checkMesh() const
 
             if (pp.coupled())
             {
-                // Check how many faces between owner and neighbour. Should
-                // be only one.
-                HashTable<label, labelPair, labelPair::Hash<>>
-                    cellToFace(2*pp.size());
+                // Check how many faces between owner and neighbour.
+                // Should be only one.
+                labelPairLookup cellToFace(2*pp.size());
 
                 label facei = pp.start();
 

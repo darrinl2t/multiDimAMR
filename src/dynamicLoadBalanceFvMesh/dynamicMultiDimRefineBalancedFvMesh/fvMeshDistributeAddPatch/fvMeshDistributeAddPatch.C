@@ -1479,7 +1479,7 @@ void Foam::fvMeshDistributeAddPatch::sendMesh
     // Send
     toDomain
         << mesh.points()
-        << CompactListList<label, face>(mesh.faces())
+        << CompactListList<label>::pack<face>(mesh.faces())
         << mesh.faceOwner()
         << mesh.faceNeighbour()
         << mesh.boundaryMesh()
@@ -1521,7 +1521,8 @@ Foam::autoPtr<Foam::fvMesh> Foam::fvMeshDistributeAddPatch::receiveMesh
 )
 {
     pointField domainPoints(fromNbr);
-    faceList domainFaces = CompactListList<label, face>(fromNbr)();
+    // Receive as (offsets/values), unpack to faceList
+    faceList domainFaces = CompactListList<label>(fromNbr).unpack<face>();
     labelList domainAllOwner(fromNbr);
     labelList domainAllNeighbour(fromNbr);
     PtrList<entry> patchEntries(fromNbr);
@@ -1853,7 +1854,7 @@ Foam::autoPtr<Foam::mapDistributePolyMesh> Foam::fvMeshDistributeAddPatch::distr
     // NEW STRATEGY
     // create new patch at the end of the regular patches (no processorPatches)
     // named oldInternalFaces
-    
+
     polyPatch pp
     (
         "oldInternalFaces",
